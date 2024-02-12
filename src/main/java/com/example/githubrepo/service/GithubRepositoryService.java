@@ -8,6 +8,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.example.githubrepo.exception.UserNotFoundException;
 import com.example.githubrepo.model.Branch;
+import com.example.githubrepo.model.Commit;
 import com.example.githubrepo.model.Repository;
 
 import reactor.core.publisher.Mono;
@@ -31,11 +32,22 @@ public class GithubRepositoryService {
 	}
 
 	private Mono<Repository> enrichWithBranchInfo(Repository repository) {
-		return webClient.get()
-				.uri("/repos/{owner}/{repo}/branches", repository.getOwner().getLogin(), repository.getName())
-				.retrieve().bodyToFlux(Branch.class).collectList().map(branches -> {
+		String owner = repository.getOwner().getLogin();
+		String repoName = repository.getName();
+
+		return webClient.get().uri("/repos/{owner}/{repo}/branches", owner, repoName).retrieve()
+				.bodyToFlux(Branch.class).flatMap(branch -> enrichWithLastCommit(branch, owner, repoName)).collectList()
+				.map(branches -> {
 					repository.setBranches(branches);
 					return repository;
+				});
+	}
+
+	private Mono<Branch> enrichWithLastCommit(Branch branch, String owner, String repoName) {
+		return webClient.get().uri("/repos/{owner}/{repo}/branches/{branch}", owner, repoName, branch.getName())
+				.retrieve().bodyToMono(Commit.class).map(commit -> {
+					branch.setLastCommit(commit);
+					return branch;
 				});
 	}
 }

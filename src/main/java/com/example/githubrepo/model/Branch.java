@@ -2,7 +2,7 @@ package com.example.githubrepo.model;
 
 public class Branch {
 	private String name;
-	private String commitSha;
+	private Commit lastCommit;
 
 	public Branch() {
 
@@ -12,15 +12,15 @@ public class Branch {
 		return name;
 	}
 
+	public Commit getLastCommit() {
+		return lastCommit;
+	}
+
+	public void setLastCommit(Commit lastCommit) {
+		this.lastCommit = lastCommit;
+	}
+
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public String getCommitSha() {
-		return commitSha;
-	}
-
-	public void setCommitSha(String commitSha) {
-		this.commitSha = commitSha;
 	}
 }
